@@ -109,6 +109,10 @@ def main():
        
             files_list["unknown"] = unknown_ext
             print(files_list)
+
+            files_list_result = files_list.copy()
+            for key in files_list_result.keys():
+                files_list_result[key] = []
             
             for item in path.iterdir():
                 parse_folder(item)
@@ -120,6 +124,12 @@ def main():
                 root, ext = os.path.splitext(file)
                 new_name = normalize(root) + ext
                 os.rename(file, new_name)
+                for category_name, extensions in files_list.items():
+                    for extension in extensions:
+                        if ext == extension:
+                            files_list_result.get(category_name).append(Path(new_name).name)
+            
+            print(files_list_result)
 
 if __name__ == '__main__':
     main()
