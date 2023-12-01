@@ -94,7 +94,10 @@ def main():
     if path.exists():
         if path.is_dir():
             for key, value in files_list.items():
-                os.mkdir(os.path.join(user_input, key))
+                try:
+                    os.mkdir(os.path.join(user_input, key))
+                except FileExistsError:
+                    pass
                 created_folders.append(key)
 
             known_ext_list = []
