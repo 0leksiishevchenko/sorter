@@ -23,11 +23,11 @@ for ua_symb, en_symb in zip(CYRILLIC_SYMBOLS, TRANSLATION):
     TRANS[ord(ua_symb)] = en_symb   
 
 def normalize(root):
-    *x_root, name = root.split("\\")
+    *x_root, name = root.split(os.sep)
     clear_name = re.sub('\W+', '_', name)
     x_root.append(translate(clear_name))
     
-    return '\\'.join(x_root)
+    return os.sep.join(x_root)
 
 def translate(name):
     en_name = name.translate(TRANS)
@@ -38,8 +38,8 @@ def unpack_archive(path):
     if path.name == 'archives':
         for archive in path.iterdir():
             file_name = archive.name.split(".")[0]
-            os.mkdir(f"{user_input}\\{path.name}\\{file_name}")
-            shutil.unpack_archive(str(archive), f"{user_input}\\{path.name}\\{file_name}")
+            os.mkdir(os.path.join(user_input, path.name, file_name))
+            shutil.unpack_archive(str(archive), os.path.join(user_input, path.name, file_name))
             os.remove(str(archive))
 
 def parse_folder(path):
@@ -47,27 +47,27 @@ def parse_folder(path):
     if path.is_file():
         try:
             if os.path.splitext(path)[1] in files_list['images']:
-                shutil.copy(str(path), f"{user_input}\\images")
+                shutil.copy(str(path), os.path.join(user_input, 'images'))
                 os.remove(path)
         
             if os.path.splitext(path)[1] in files_list['videos']:
-                shutil.copy(str(path), f"{user_input}\\videos")
+                shutil.copy(str(path), os.path.join(user_input, 'videos'))
                 os.remove(path)
         
             if os.path.splitext(path)[1] in files_list['documents']:
-                shutil.copy(str(path), f"{user_input}\\documents")
+                shutil.copy(str(path), os.path.join(user_input, 'documents'))
                 os.remove(path)
         
             if os.path.splitext(path)[1] in files_list['music']:
-                shutil.copy(str(path), f"{user_input}\\music")
+                shutil.copy(str(path), os.path.join(user_input, 'music'))
                 os.remove(path)
         
             if os.path.splitext(path)[1] in files_list['archives']:
-                shutil.copy(str(path), f"{user_input}\\archives")
+                shutil.copy(str(path), os.path.join(user_input, 'archives'))
                 os.remove(path)
         
             if os.path.splitext(path)[1] in files_list['unknown']:
-                shutil.copy(str(path), f"{user_input}")
+                shutil.copy(str(path), user_input)
                 os.remove(path)
                 
         except shutil.SameFileError:
@@ -94,7 +94,7 @@ def main():
     if path.exists():
         if path.is_dir():
             for key, value in files_list.items():
-                os.mkdir(user_input+'/'+key)
+                os.mkdir(os.path.join(user_input, key))
                 created_folders.append(key)
 
             known_ext_list = []
