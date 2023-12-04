@@ -37,7 +37,6 @@ def translate(name):
 def unpack_archive(path):
     if path.name == 'archives':
         for archive in path.iterdir():
-            print(archive)
             file_name = archive.name.split(".")[0]
             os.mkdir(os.path.join(user_input, path.name, file_name))
             try:
@@ -70,12 +69,12 @@ def parse_folder(path):
                 shutil.copy(str(path), os.path.join(user_input, 'archives'))
                 os.remove(path)
         
-            elif os.path.splitext(path)[1].lower() in files_list['unknown']:
-                shutil.copy(str(path), user_input)
+            elif os.path.splitext(path)[1].lower() in files_list['others']:
+                shutil.copy(str(path), os.path.join(user_input, 'others'))
                 os.remove(path)
 
             else:
-                shutil.copy(str(path), user_input)
+                shutil.copy(str(path), os.path.join(user_input, 'others'))
                 os.remove(path)
 
                 
@@ -102,12 +101,6 @@ def main():
     path = Path(user_input)
     if path.exists():
         if path.is_dir():
-            for key, value in files_list.items():
-                try:
-                    os.mkdir(os.path.join(user_input, key))
-                except FileExistsError:
-                    pass
-                created_folders.append(key)
 
             known_ext_list = []
             for value in files_list.values():
@@ -119,8 +112,15 @@ def main():
                 if os.path.splitext(file)[1].lower() not in known_ext_list and len(os.path.splitext(file)[1]) != 0:
                     unknown_ext = unknown_ext + (os.path.splitext(file)[1],)
        
-            files_list["unknown"] = tuple(set(unknown_ext))
-            print(files_list)
+            files_list["others"] = tuple(set(unknown_ext))
+            print(f"The list of all extensions known to the script\n {files_list}")
+
+            for key in files_list.keys():
+                try:
+                    os.mkdir(os.path.join(user_input, key))
+                except FileExistsError:
+                    pass
+                created_folders.append(key)
 
             files_list_result = files_list.copy()
             for key in files_list_result.keys():
@@ -141,7 +141,8 @@ def main():
                         if ext.lower() == extension:
                             files_list_result.get(category_name).append(Path(new_name).name)
             
-            print(files_list_result)
+            print(f"The list of all files in each category\n {files_list_result}")
+            
 
 if __name__ == '__main__':
     main()
