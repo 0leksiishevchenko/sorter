@@ -6,9 +6,9 @@ import shutil
 import time
 
 files_list = {'images':('.jpeg', '.png', '.jpg', '.svg'),
-    'videos':('.avi', '.mp4', '.mov', '.mkv'),
+    'video':('.avi', '.mp4', '.mov', '.mkv'),
     'documents':('.doc', '.docx', '.txt', '.pdf', '.xlsx', '.pptx'),
-    'music':('.mp3', '.ogg', '.wav', '.amr'),
+    'audio':('.mp3', '.ogg', '.wav', '.amr'),
     'archives':('.zip', '.gz', '.tar')}
 
 created_folders = []
@@ -37,47 +37,56 @@ def translate(name):
 def unpack_archive(path):
     if path.name == 'archives':
         for archive in path.iterdir():
+            print(archive)
             file_name = archive.name.split(".")[0]
             os.mkdir(os.path.join(user_input, path.name, file_name))
-            shutil.unpack_archive(str(archive), os.path.join(user_input, path.name, file_name))
+            try:
+                shutil.unpack_archive(str(archive), os.path.join(user_input, path.name, file_name))
+            except shutil.ReadError:
+                os.rmdir(os.path.join(user_input, path.name, file_name))
             os.remove(str(archive))
 
 def parse_folder(path):
     
     if path.is_file():
         try:
-            if os.path.splitext(path)[1] in files_list['images']:
+            if os.path.splitext(path)[1].lower() in files_list['images']:
                 shutil.copy(str(path), os.path.join(user_input, 'images'))
                 os.remove(path)
         
-            if os.path.splitext(path)[1] in files_list['videos']:
-                shutil.copy(str(path), os.path.join(user_input, 'videos'))
+            elif os.path.splitext(path)[1].lower() in files_list['video']:
+                shutil.copy(str(path), os.path.join(user_input, 'video'))
                 os.remove(path)
         
-            if os.path.splitext(path)[1] in files_list['documents']:
+            elif os.path.splitext(path)[1].lower() in files_list['documents']:
                 shutil.copy(str(path), os.path.join(user_input, 'documents'))
                 os.remove(path)
         
-            if os.path.splitext(path)[1] in files_list['music']:
-                shutil.copy(str(path), os.path.join(user_input, 'music'))
+            elif os.path.splitext(path)[1].lower() in files_list['audio']:
+                shutil.copy(str(path), os.path.join(user_input, 'audio'))
                 os.remove(path)
         
-            if os.path.splitext(path)[1] in files_list['archives']:
+            elif os.path.splitext(path)[1].lower() in files_list['archives']:
                 shutil.copy(str(path), os.path.join(user_input, 'archives'))
                 os.remove(path)
         
-            if os.path.splitext(path)[1] in files_list['unknown']:
+            elif os.path.splitext(path)[1].lower() in files_list['unknown']:
                 shutil.copy(str(path), user_input)
                 os.remove(path)
+
+            else:
+                shutil.copy(str(path), user_input)
+                os.remove(path)
+
                 
         except shutil.SameFileError:
             pass
                    
     elif path.is_dir():
         dir_name = re.compile(path.name)
-        matches = list(filter(dir_name.match, created_folders))
+        matches = list(filter(dir_name.fullmatch, created_folders))
         if len(matches) != 0:
-            pass          
+            pass
         else:
             for sub_path in path.iterdir():
                 parse_folder(sub_path)
@@ -107,10 +116,10 @@ def main():
         
             unknown_ext = ()
             for file in path.glob('**/*'):
-                if os.path.splitext(file)[1] not in known_ext_list and len(os.path.splitext(file)[1]) != 0:
+                if os.path.splitext(file)[1].lower() not in known_ext_list and len(os.path.splitext(file)[1]) != 0:
                     unknown_ext = unknown_ext + (os.path.splitext(file)[1],)
        
-            files_list["unknown"] = unknown_ext
+            files_list["unknown"] = tuple(set(unknown_ext))
             print(files_list)
 
             files_list_result = files_list.copy()
@@ -129,7 +138,7 @@ def main():
                 os.rename(file, new_name)
                 for category_name, extensions in files_list.items():
                     for extension in extensions:
-                        if ext == extension:
+                        if ext.lower() == extension:
                             files_list_result.get(category_name).append(Path(new_name).name)
             
             print(files_list_result)
